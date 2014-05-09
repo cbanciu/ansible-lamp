@@ -1,0 +1,14 @@
+---
+- name: Install Apache on RedHat
+  yum: name={{ apache }} state=present
+  when: ansible_os_family == "RedHat"
+
+- name: Install Apache on Debian
+  apt: name={{ apache }} state=present update_cache=yes
+  when: ansible_os_family == "Debian"
+
+- name: Enable Apache
+  service: name={{ apache }} enabled=yes
+
+- name: Restart Apache
+  service: name={{ apache }} state=restarted

@@ -1,0 +1,19 @@
+---
+
+- name: Check IUS repo
+  shell: rpm -q ius-release
+  when: ansible_os_family == "RedHat"
+  register: check_ius
+  ignore_errors: True
+
+- name: Install IUS
+  yum: name=http://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-11.ius.centos6.noarch.rpm state=present
+  when: check_ius|failed and ansible_os_family == "RedHat"
+
+- name: Import GPG key for IUS
+  rpm_key: state=present key=http://dl.iuscommunity.org/pub/ius/IUS-COMMUNITY-GPG-KEY
+  when: check_ius|failed and ansible_os_family == "RedHat"
+
+- name: Install yum-plugin-replace
+  yum: name=yum-plugin-replace state=present
+  when: check_ius|failed and ansible_os_family == "RedHat"

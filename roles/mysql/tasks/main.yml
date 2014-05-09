@@ -1,0 +1,65 @@
+---
+- name: Check mysql-libs on RHEL
+  command: rpm -q mysql-libs
+  ignore_errors: yes
+  register: mysql_libs_check
+  when: ansible_os_family == "RedHat"
+
+- name: Remove libmysql if exists
+  shell: rpm -e --nodeps mysql-libs
+  when: mysql_libs_check|success and ansible_os_family == "RedHat"
+
+- name: Check MySQL if installed 
+  shell: /usr/bin/test -e "{{ mysqld_path }}"
+  ignore_errors: True
+  register: mysql_service_check
+  
+- name: Install MySQL55 on RHEL
+  yum: name={{ item }} state=present
+  with_items:
+    - "{{ mysql_server }}"
+    - "{{ mysql_client }}"
+    - "{{ mysql_python }}"
+  when: ansible_os_family == "RedHat" and mysql_service_check|failed
+
+- name: Install MySQL55 on Debian
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+    - "{{ mysql_server }}"
+    - "{{ mysql_client }}"
+    - "{{ mysql_python }}"
+  when: ansible_os_family == "Debian" and mysql_service_check|failed
+
+- name: Make sure mysql is running
+  service: name={{ mysql_service }} state=running enabled=yes
+
+- name: Check /root/.my.cnf
+  command: /usr/bin/test -e /root/.my.cnf
+  register: mysql_root_check
+  ignore_errors: True
+
+- name: update mysql root password for all root accounts
+  mysql_user: name=root host={{ item }} password={{ mysql_root_password }}
+  with_items:
+    - 127.0.0.1
+    - ::1
+    - localhost
+  when: mysql_root_check|failed
+  notify: restart mysql
+ 
+- name: copy .my.cnf file with root password credentials
+  template: src=root.my.j2 dest=/root/.my.cnf owner=root mode=0600
+  when: mysql_root_check|failed
+
+- name: MySQL | Remove the MySQL test database
+  mysql_db: db=test state=absent
+
+- name: Delete anonymous MySQL user for localhost.
+  mysql_user: name="" host={{ item }} state=absent
+  with_items:
+    - localhost
+    - "{{ ansible_fqdn }}"   
+
+- name: Enable MySQL on boot time
+  service: name={{ mysql_service }} enabled=yes
+

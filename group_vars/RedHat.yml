@@ -1,0 +1,11 @@
+---
+# RedHat values
+
+apache: httpd
+
+mysql_server: mysql55-server
+mysql_client: mysql55
+mysql_python: MySQL-python
+mysql_service: mysqld
+mysqld_path: /usr/libexec/mysqld
+

@@ -1,0 +1,25 @@
+---
+- name: Install Apache, MySQL and PHP 
+  hosts: all
+  user: root
+  vars_files:
+    - "group_vars/{{ ansible_os_family }}.yml"
+  # remote_user: user
+  # sudo: yes
+
+- name: Add IUS repository
+  hosts: all
+  roles:
+     - common
+
+
+- name: Install apache and php 
+  hosts: web
+  roles:
+    - apache
+    - php
+
+- name: Install MySQL
+  hosts: db
+  roles:
+    - mysql
