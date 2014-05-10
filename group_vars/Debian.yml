@@ -3,8 +3,8 @@
 
 apache: apache2
 
-mysql_server: mysql-server-5.5
-mysql_client: mysql-client-5.5
+mysql_server: mysql-server
+mysql_client: mysql-client
 mysql_python: python-mysqldb
 mysql_service: mysql
 mysqld_path: /usr/sbin/mysqld
